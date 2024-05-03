@@ -1,6 +1,10 @@
 import numpy as np
 
 def simular_atendimento_com_fila(n, μ, λ, T, N):
+    x_historic = [] # resultados de clientes atendidos
+    y_historic = [] # resultados de clientes que foram embora
+    w_historic = [] # resultados de proporção de clientes que foram embora
+  
     x_total = 0  # contador total de clientes atendidos
     y_total = 0  # contador total de clientes que foram embora
     r_total = 0  # comprimento total da fila
@@ -37,7 +41,10 @@ def simular_atendimento_com_fila(n, μ, λ, T, N):
                     r -= 1  # cliente sai da fila
                     x += 1  # cliente é atendido
                     tm = max(tm, Tu - tcheg[k-1])  # calcular o tempo máximo de permanência
-        
+        x_historic.append(x)
+        y_historic.append(y)
+        w_historic.append(y / (x + y + r))
+
         x_total += x
         y_total += y
         r_total += r
@@ -45,24 +52,29 @@ def simular_atendimento_com_fila(n, μ, λ, T, N):
     
     # Calcular a proporção de clientes que foram embora
     w_total = y_total / (x_total + y_total + r_total)
+
+    x_mean = np.mean(x_historic)
+    y_mean = np.mean(y_historic)
+    w_mean = np.mean(w_historic)
+
+    x_desvio = np.std(x_historic)
+    y_desvio = np.std(y_historic)
+    w_desvio = np.std(w_historic)
     
     # Retornar o número médio de clientes atendidos, número médio de clientes que foram embora,
     # comprimento médio da fila e tempo máximo de permanência
-    return x_total / N, y_total / N, r_total / N, tm_total / N, w_total
+    return x_mean, y_mean, w_mean, x_desvio, y_desvio, w_desvio
 
 # Parâmetros do programa
-n = 3  # número de guichês de atendimento
-μ = 0.2  # taxa de atendimento do guichê
-λ = 0.1  # taxa de chegada dos clientes
-T = 480  # tempo total de funcionamento do sistema (em minutos)
+n = 5  # número de guichês de atendimento
+μ = 0.5  # taxa de atendimento do guichê
+λ = 3  # taxa de chegada dos clientes
+T = 50  # tempo total de funcionamento do sistema (em minutos)
 N = 10000  # número de repetições da simulação
 
 # Simular o atendimento com fila
-clientes_atendidos_medio, clientes_que_foram_embora_medio, comprimento_medio_fila, tempo_max_permanencia_medio, proporcao_embora = simular_atendimento_com_fila(n, μ, λ, T, N)
+x_mean, y_mean, w_mean, x_desvio, y_desvio, w_desvio = simular_atendimento_com_fila(n, μ, λ, T, N)
 
-# Exibir resultados
-print(f"Número médio de clientes atendidos: {clientes_atendidos_medio}")
-print(f"Número médio de clientes que foram embora: {clientes_que_foram_embora_medio}")
-print(f"Comprimento médio da fila: {comprimento_medio_fila}")
-print(f"Tempo médio máximo de permanência: {tempo_max_permanencia_medio}")
-print(f"Proporção média de clientes que foram embora: {proporcao_embora}")
+print(f'Número médio de clientes atendidos: {x_mean:.2f} ± {x_desvio:.2f}')
+print(f'Número médio de clientes que foram embora: {y_mean:.2f} ± {y_desvio:.2f}')
+print(f'Proporção média de clientes que foram embora: {w_mean:.2f} ± {w_desvio:.2f}')
